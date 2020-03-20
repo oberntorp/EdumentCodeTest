@@ -1,0 +1,15 @@
+main
+{
+    background: #efefef;
+}
+header
+{
+    height: 3px;
+    width: 490px;
+    padding: 10px;
+    margin: auto auto;
+}
+header span#viewType
+{
+    float: right;
+}

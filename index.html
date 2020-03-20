@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <main>
     <header>
-        <title></title>
-        <link rel="stylesheet" type="text/css" href="css/styles.css" >
-    </header>
-    <body>
-        <head>
-            <div id="currentlocation">
+        <div id="currentLocation"></div>
+        <span id="viewType">
+            <label for="treeView">Tree VIew</label>
+            <input type="radio" name="viewType" value="treeView" checked id="treeView">
 
-            </div>
-        </head>
-        <main>
-            <section id="fileListing">
-                <ul></ul>
-            </section>
-        </main>
-        <script src="js/site.js"></script>
-    </body>
+            <label for="iconView">Icon VIew</label>
+            <input type="radio" name="viewType" value="iconView" id="iconView">
+        </span>
+    </header>
+        <section id="fileListing"><ul></ul></section>
+    </main>
+    <script src="js/site.js"></script>
+</body>
 </html>
