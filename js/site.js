@@ -1,16 +1,29 @@
 let filePathArray = 
 [
     "myStartingDir/pictures/picture.png",
-    "myStartingDir/movies/movie.png",
+    "myStartingDir/pictures/movie.png",
     "dev/textdocuments/test.txt"
 ];
 let fileListing = document.querySelector("#fileListing");
-let standardView = true;
+let treeView = true;
 
 let changeViewType = (event, filePaths) =>
 {
-    standardView = event.target.value == "treeView";
+    treeView = event.target.value == "treeView";
     writeFilesToGUI(filePaths);
+    toggleCurrentLocationBar();
+}
+
+function toggleCurrentLocationBar() 
+{
+    if (treeView) 
+    {
+        document.querySelector("header #currentLocation").className = "hide";
+    }
+    else if (!treeView && document.querySelector("header #currentLocation").className === "hide") 
+    {
+        document.querySelector("header #currentLocation").removeAttribute("class");
+    }
 }
 
 let writeFilesToGUI = (filesArray) =>
@@ -21,9 +34,24 @@ let writeFilesToGUI = (filesArray) =>
     }
     for(let i = 0; i < filesArray.length; i++)
     {
-        let partsOfFileListingItem = filesArray[i].split('/');
+        toggleIconView();
+
+        let currentLiList = document.querySelectorAll("#fileListing > ul li");
+        let linkLabels = filesArray[i].split('/');
         
-        document.querySelector("#fileListing > ul").appendChild(createListItemWithLink(partsOfFileListingItem, 0));
+        let currentLiListContainsLinkLabel = isLinkLabelInCurrentLiList(currentLiList, linkLabels);
+        if(!currentLiListContainsLinkLabel)
+            document.querySelector("#fileListing > ul").appendChild(createListItemWithLink(linkLabels, 0));
+    }
+}
+
+function toggleIconView() 
+{
+    if (!treeView) {
+        document.querySelector("#fileListing > ul").className = "iconView";
+    }
+    else if (treeView && document.querySelector("#fileListing > ul").className === "iconView") {
+        document.querySelector("#fileListing > ul").removeAttribute("class");
     }
 }
 
@@ -39,6 +67,16 @@ function clearFromListItems() {
     }
 }
 
+function isLinkLabelInCurrentLiList(currentLiList, linkLabel) 
+{
+    return Array.from(currentLiList).map(x => {
+        // If icon view, firstchild will be a span for fontawsome, therefore I need to check a little differently
+        let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? x.firstChild.innerHTML === linkLabel[0] : x.childNodes[1].innerHTML === linkLabel[0] 
+        if (isAnchorTagInnerHtmlMatchingLinkLabel)
+            return true;
+    })[0];
+}
+
 function  writeSubDirectoriesToGUI(event, filesArray)
 {
     event.preventDefault();
@@ -52,13 +90,14 @@ function  writeSubDirectoriesToGUI(event, filesArray)
         let subTree = createSubTree(pathsInDirectory);
 
         // If list view, else replace file listing ul with subTree
-        if(standardView)
+        if(treeView)
         {
             clickedElement.parentElement.appendChild(subTree);
         }
         else
         {
             fileListing.replaceChild(subTree, fileListing.firstChild)
+            addCurrentLocation(clickedElement.innerHTML);
         }
     }
     else
@@ -103,18 +142,30 @@ function getNextPath(filesArray, oldPath)
 function createListItemWithLink(partsOfFileListingItem, directoryLevel)
 {
     let listItem = document.createElement("li");
+    if(!treeView)
+    {
+        listItem.appendChild(elementWithFontAwsomeIcon());
+    }
     let anchorTag = createAnchorTag(partsOfFileListingItem, directoryLevel);
     listItem.appendChild(anchorTag);
 
     return listItem;
 }
 
-function createAnchorTag(partsOfFileListingItem, directoryLevel) {
+function elementWithFontAwsomeIcon() 
+{
+    let fontAwsomeIcon = document.createElement("span");
+    fontAwsomeIcon.classList.add("icon", "fas", "fa-folder", "fa-2x");
+
+    return fontAwsomeIcon;
+}
+
+function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     let anchorTag = document.createElement("a");
-    anchorTag.setAttribute("href", partsOfFileListingItem[0]);
+    anchorTag.setAttribute("href", textAndHrefOfAnchor[0]);
     anchorTag.setAttribute("data-level", directoryLevel);
     anchorTag.className = "fileListingItemLink";
-    anchorTag.innerHTML = partsOfFileListingItem[0];
+    anchorTag.innerHTML = textAndHrefOfAnchor[0];
     anchorTag.addEventListener("click", (event) => writeSubDirectoriesToGUI(event, filePathArray));
 
     return anchorTag;
@@ -130,14 +181,38 @@ function createSubTree(treeBranches)
     let newUl = document.createElement("ul");
     for(let i = 0; i < treeBranches.paths.length; i++)
     {
-        let partsOfFileListingItem = treeBranches.paths[i].split("/");
-        let newLi = createListItemWithLink(partsOfFileListingItem, treeBranches.lastIndexFoundNewPath);
-        newUl.appendChild(newLi);
+        let linkLabels = treeBranches.paths[i].split("/");
+        
+        let newLi = createListItemWithLink(linkLabels, treeBranches.lastIndexFoundNewPath);
+        let currentLiList = newUl.children;
+    
+        if(!isLinkLabelInCurrentLiList(currentLiList, linkLabels))
+            newUl.appendChild(newLi);
+
+        if(!treeView)
+            newUl.className = "iconView";
     }
 
     return newUl;
 }
 
+function addCurrentLocation(text)
+{
+    let currentLocationContainer = document.querySelector("main header #currentLocation");
+    currentLocationContainer.appendChild(createNewLocationItem(text));
+}
+
+function createNewLocationItem(textToItem)
+{
+    let locationItem = document.createElement("span");
+    locationItem.className = "locationItem";
+    let textNode = document.createTextNode(textToItem);
+    locationItem.appendChild(textNode);
+
+    return locationItem;
+}
+
+toggleCurrentLocationBar();
 writeFilesToGUI(filePathArray, 0);
 let fileListingItemLinks = document.querySelectorAll(".fileListingItemLink");
 let viewTypeSlections = document.querySelectorAll("header #viewType input");

@@ -9,7 +9,36 @@ header
     padding: 10px;
     margin: auto auto;
 }
+
+header #currentLocation .locationItem
+{
+    margin-left: 5px;
+}
+
 header span#viewType
 {
     float: right;
+}
+
+#fileListing .iconView
+{
+    display: grid;
+    grid-template-columns: auto auto;
+    list-style: none;
+}
+
+#fileListing .iconView li, #fileListing .iconView li .icon
+{
+    display: inline;
+}
+
+#fileListing .iconView li .icon
+{
+    vertical-align: middle;
+    margin-right: 4px;;
+}
+
+.hide
+{
+    display: none;
 }
