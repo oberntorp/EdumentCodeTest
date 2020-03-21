@@ -37,11 +37,11 @@ let writeFilesToGUI = (filesArray) =>
         toggleIconView();
 
         let currentLiList = document.querySelectorAll("#fileListing > ul li");
-        let linkLabels = filesArray[i].split('/');
+        let linkLabel = filesArray[i].split('/')[0];
         
-        let currentLiListContainsLinkLabel = isLinkLabelInCurrentLiList(currentLiList, linkLabels);
+        let currentLiListContainsLinkLabel = isLinkLabelInCurrentLiList(currentLiList, linkLabel);
         if(!currentLiListContainsLinkLabel)
-            document.querySelector("#fileListing > ul").appendChild(createListItemWithLink(linkLabels, 0));
+            document.querySelector("#fileListing > ul").appendChild(createListItemWithLink(linkLabel, 0));
     }
 }
 
@@ -71,7 +71,7 @@ function isLinkLabelInCurrentLiList(currentLiList, linkLabel)
 {
     return Array.from(currentLiList).map(x => {
         // If icon view, firstchild will be a span for fontawsome, therefore I need to check a little differently
-        let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? x.firstChild.innerHTML === linkLabel[0] : x.childNodes[1].innerHTML === linkLabel[0] 
+        let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? x.firstChild.innerHTML === linkLabel : x.childNodes[1].innerHTML === linkLabel; 
         if (isAnchorTagInnerHtmlMatchingLinkLabel)
             return true;
     })[0];
@@ -139,33 +139,57 @@ function getNextPath(filesArray, oldPath)
     return resultObject;
 }
 
-function createListItemWithLink(partsOfFileListingItem, directoryLevel)
+function createListItemWithLink(fileName, directoryLevel)
 {
     let listItem = document.createElement("li");
     if(!treeView)
     {
-        listItem.appendChild(elementWithFontAwsomeIcon());
+        listItem.appendChild(elementWithFontAwsomeIcon(getTypeOfIconFromFileType(fileName)));
     }
-    let anchorTag = createAnchorTag(partsOfFileListingItem, directoryLevel);
+    let anchorTag = createAnchorTag(fileName, directoryLevel);
     listItem.appendChild(anchorTag);
 
     return listItem;
 }
 
-function elementWithFontAwsomeIcon() 
+function getTypeOfIconFromFileType(fileName)
+{
+    let fileType = fileName.split(".")[1];
+
+    // Split occured, on . in string (file)
+    if(typeof fileType !== "undefined")
+    {
+        switch(fileType)
+        {
+            case "png":
+            case "jpg":
+                Array("fas", "fa-file-image", "fa-2x");
+                break;
+            default:
+                return Array("far", "fa-file-alt");
+        }
+    }
+    else
+    {
+        return Array("fas", "fa-folder", "fa-2x");
+    }
+}
+
+function elementWithFontAwsomeIcon(fontAwsomeClasses) 
 {
     let fontAwsomeIcon = document.createElement("span");
-    fontAwsomeIcon.classList.add("icon", "fas", "fa-folder", "fa-2x");
+    fontAwsomeIcon.classList.add("icon");
+    fontAwsomeClasses.map(x => fontAwsomeIcon.classList.add(x));
 
     return fontAwsomeIcon;
 }
 
 function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     let anchorTag = document.createElement("a");
-    anchorTag.setAttribute("href", textAndHrefOfAnchor[0]);
+    anchorTag.setAttribute("href", textAndHrefOfAnchor);
     anchorTag.setAttribute("data-level", directoryLevel);
     anchorTag.className = "fileListingItemLink";
-    anchorTag.innerHTML = textAndHrefOfAnchor[0];
+    anchorTag.innerHTML = textAndHrefOfAnchor;
     anchorTag.addEventListener("click", (event) => writeSubDirectoriesToGUI(event, filePathArray));
 
     return anchorTag;
@@ -181,7 +205,7 @@ function createSubTree(treeBranches)
     let newUl = document.createElement("ul");
     for(let i = 0; i < treeBranches.paths.length; i++)
     {
-        let linkLabels = treeBranches.paths[i].split("/");
+        let linkLabels = treeBranches.paths[i].split("/")[0];
         
         let newLi = createListItemWithLink(linkLabels, treeBranches.lastIndexFoundNewPath);
         let currentLiList = newUl.children;

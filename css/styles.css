@@ -15,6 +15,17 @@ header #currentLocation .locationItem
     margin-left: 5px;
 }
 
+header #currentLocation .locationItem ~ .locationItem:before
+{
+    content: "";
+    margin-right: 6px;
+    border: solid black;
+    border-width: 0px 1px 1px 0px;
+    padding: 3px;
+    display: inline-block;
+    transform: rotate(-45deg);
+}
+
 header span#viewType
 {
     float: right;
