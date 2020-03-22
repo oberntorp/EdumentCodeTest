@@ -2,7 +2,8 @@ let filePathArray =
 [
     "myStartingDir/pictures/picture.png",
     "myStartingDir/pictures/movie.png",
-    "dev/textdocuments/test.txt"
+    "dev/textdocuments/test.txt",
+    "dev/pictures/picture.png"
 ];
 let fileListing = document.querySelector("#fileListing");
 let treeView = true;
@@ -15,6 +16,11 @@ let goUppInDirectoryLevel = (event) =>
     if(!hasNoSubLevel(clickedElement.parentElement))
     {
         clickedElement.parentElement.childNodes[1].remove();
+    }
+    else
+    {
+        let subLevel = createSubLevel(getNextPath(filePathArray, clickedElement.getAttribute("href"), true));
+        fileListing.replaceChild(subLevel, fileListing.firstChild);
     }
 }
 
@@ -80,12 +86,15 @@ function clearFromListItems() {
 
 function isLinkLabelInCurrentLiList(currentLiList, linkLabel) 
 {
-    return Array.from(currentLiList).map(x => {
+    for(let i = 0; i < currentLiList.length; i++)
+    {
         // If icon view, firstchild will be a span for fontawsome, therefore I need to check a little differently
-        let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? x.firstChild.innerHTML === linkLabel : x.childNodes[1].innerHTML === linkLabel; 
-        if (isAnchorTagInnerHtmlMatchingLinkLabel)
+        let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? currentLiList[i].firstChild.innerHTML === linkLabel : currentLiList[i].childNodes[1].innerHTML === linkLabel; 
+        if(isAnchorTagInnerHtmlMatchingLinkLabel)
+        {
             return true;
-    })[0];
+        }
+    }
 }
 
 function  writeSubDirectoriesToGUI(event, filesArray)
@@ -109,7 +118,7 @@ function  writeSubDirectoriesToGUI(event, filesArray)
         else
         {
             fileListing.replaceChild(subLevel, fileListing.firstChild)
-            addCurrentLocation(clickedElement.innerHTML, clickedElement.dataset.location);
+            addCurrentLocation(clickedElement.innerHTML, clickedElement.dataset.level);
         }
     }
     else
@@ -122,7 +131,7 @@ function hasNoSubLevel(clickedElement) {
     return typeof clickedElement.childNodes[1] === "undefined";
 }
 
-function getNextPath(filesArray, oldPath)
+function getNextPath(filesArray, oldPath, backOneLevel = false)
 {
     let lastIndexPathFound = -1;
     let resultObject =
@@ -138,7 +147,15 @@ function getNextPath(filesArray, oldPath)
         let oldPathFoundAt = pathArray.indexOf(oldPath);
         if(oldPathFoundAt != -1)
         {
-            pathArray.splice(0, ++oldPathFoundAt);
+            if(backOneLevel)
+            {
+                pathArray.splice(0, oldPathFoundAt);
+            }
+            else
+            {
+                pathArray.splice(0, ++oldPathFoundAt);
+            }
+
             if(pathArray.length > 0)
             {
                 resultObject.paths.push(pathArray.join("/"));
@@ -179,8 +196,7 @@ function getTypeOfIconFromFileType(fileName)
         {
             case "png":
             case "jpg":
-                Array("fas", "fa-file-image", "fa-2x");
-                break;
+                return Array("fas", "fa-file-image", "fa-2x");
             default:
                 return Array("far", "fa-file-alt");
         }
@@ -208,6 +224,8 @@ function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     anchorTag.innerHTML = textAndHrefOfAnchor;
     anchorTag.addEventListener("click", event =>
     { 
+        // If treeView, has li an ul as first child, a click on that li should close the level underneath it
+        // If iconView, a click on a link should only go deeper
         if(treeView)
         {
             (hasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
@@ -256,10 +274,45 @@ function createNewLocationItem(textToItem, level)
 {
     let locationItem = document.createElement("span");
     locationItem.className = "locationItem";
-    let anchorTag = createAnchorTag(textToItem, level);
+    let anchorTag = createLocationAnchorTag(textToItem, level);
     locationItem.appendChild(anchorTag);
 
     return locationItem;
+}
+
+function createLocationAnchorTag(textAndHrefOfAnchor, directoryLevel) {
+    let anchorTag = document.createElement("a");
+    anchorTag.setAttribute("href", textAndHrefOfAnchor);
+    anchorTag.setAttribute("data-level", directoryLevel);
+    anchorTag.className = "fileListingItemLink";
+    anchorTag.innerHTML = textAndHrefOfAnchor;
+    anchorTag.addEventListener("click", event =>
+    { 
+        if(directoryLevel > 0)
+        {
+            goUppInDirectoryLevel(event);
+        }
+        else
+        {
+            event.preventDefault();
+            writeFilesToGUI(filePathArray);
+        }
+        removeAllLocationItemsExceptRoot();
+    });
+
+    return anchorTag;
+}
+
+function removeAllLocationItemsExceptRoot() 
+{
+    let locationItems = document.querySelectorAll("header #currentLocation .locationItem");
+    for(let i = 0; i < locationItems.length; i++)
+    {
+        if(i > 0)
+        {
+            locationItems[i].remove();
+        }
+    }
 }
 
 toggleCurrentLocationBar();
