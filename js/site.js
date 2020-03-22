@@ -11,6 +11,7 @@ let goUppInDirectoryLevel = (event) =>
 {
     event.preventDefault();
     let clickedElement = event.target;
+    
     if(!hasNoSubLevel(clickedElement.parentElement))
     {
         clickedElement.parentElement.childNodes[1].remove();
@@ -108,7 +109,7 @@ function  writeSubDirectoriesToGUI(event, filesArray)
         else
         {
             fileListing.replaceChild(subLevel, fileListing.firstChild)
-            addCurrentLocation(clickedElement.innerHTML);
+            addCurrentLocation(clickedElement.innerHTML, clickedElement.dataset.location);
         }
     }
     else
@@ -207,7 +208,14 @@ function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     anchorTag.innerHTML = textAndHrefOfAnchor;
     anchorTag.addEventListener("click", event =>
     { 
-        (hasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
+        if(treeView)
+        {
+            (hasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
+        }
+        else
+        {
+            writeSubDirectoriesToGUI(event, filePathArray);
+        }
     });
 
     return anchorTag;
@@ -238,18 +246,18 @@ function createSubLevel(treeBranches)
     return newUl;
 }
 
-function addCurrentLocation(text)
+function addCurrentLocation(text, level)
 {
     let currentLocationContainer = document.querySelector("main header #currentLocation");
-    currentLocationContainer.appendChild(createNewLocationItem(text));
+    currentLocationContainer.appendChild(createNewLocationItem(text, level));
 }
 
-function createNewLocationItem(textToItem)
+function createNewLocationItem(textToItem, level)
 {
     let locationItem = document.createElement("span");
     locationItem.className = "locationItem";
-    let textNode = document.createTextNode(textToItem);
-    locationItem.appendChild(textNode);
+    let anchorTag = createAnchorTag(textToItem, level);
+    locationItem.appendChild(anchorTag);
 
     return locationItem;
 }
