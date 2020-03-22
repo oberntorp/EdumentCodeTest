@@ -23,7 +23,7 @@ A webbapplication for browsing an made up directory
   * Tree view: evident by indentation.
 * In "TreeView", please note that the current location means going up
 
-The site is to be found: <http://www.berntorp.com/edumentcodetest>
+The site is to be found at: <http://www.berntorp.com/edumentcodetest>
 
 Sincerely
 
