@@ -1,7 +1,7 @@
 let filePathArray = 
 [
     "myStartingDir/pictures/picture.png",
-    "myStartingDir/pictures/movie.png",
+    "myStartingDir/movies/movie.mp4",
     "dev/textdocuments/test.txt",
     "dev/pictures/picture.png"
 ];
@@ -13,7 +13,7 @@ let goUppInDirectoryLevel = (event) =>
     event.preventDefault();
     let clickedElement = event.target;
     
-    if(!hasNoSubLevel(clickedElement.parentElement))
+    if(!nodeInTreeViewHasNoSubLevel(clickedElement.parentElement))
     {
         clickedElement.parentElement.childNodes[1].remove();
     }
@@ -88,7 +88,7 @@ function isLinkLabelInCurrentLiList(currentLiList, linkLabel)
 {
     for(let i = 0; i < currentLiList.length; i++)
     {
-        // If icon view, firstchild will be a span for fontawsome, therefore I need to check a little differently
+        // If icon view, first child will be a span for fontawsome, therefore the link will be the second child if iconView
         let isAnchorTagInnerHtmlMatchingLinkLabel = (treeView) ? currentLiList[i].firstChild.innerHTML === linkLabel : currentLiList[i].childNodes[1].innerHTML === linkLabel; 
         if(isAnchorTagInnerHtmlMatchingLinkLabel)
         {
@@ -127,11 +127,11 @@ function  writeSubDirectoriesToGUI(event, filesArray)
     }
 }
 
-function hasNoSubLevel(clickedElement) {
+function nodeInTreeViewHasNoSubLevel(clickedElement) {
     return typeof clickedElement.childNodes[1] === "undefined";
 }
 
-function getNextPath(filesArray, oldPath, backOneLevel = false)
+function getNextPath(filesArray, oldPath, upOneLevel = false)
 {
     let lastIndexPathFound = -1;
     let resultObject =
@@ -147,7 +147,7 @@ function getNextPath(filesArray, oldPath, backOneLevel = false)
         let oldPathFoundAt = pathArray.indexOf(oldPath);
         if(oldPathFoundAt != -1)
         {
-            if(backOneLevel)
+            if(upOneLevel)
             {
                 pathArray.splice(0, oldPathFoundAt);
             }
@@ -189,14 +189,15 @@ function getTypeOfIconFromFileType(fileName)
 {
     let fileType = fileName.split(".")[1];
 
-    // Split occured, on . in string (file)
-    if(typeof fileType !== "undefined")
+    if(wasSplitSuccessfull(fileType))
     {
         switch(fileType)
         {
             case "png":
             case "jpg":
                 return Array("fas", "fa-file-image", "fa-2x");
+            case "mp4":
+                return Array("fas", "fa-film", "fa-2x");
             default:
                 return Array("far", "fa-file-alt");
         }
@@ -205,6 +206,10 @@ function getTypeOfIconFromFileType(fileName)
     {
         return Array("fas", "fa-folder", "fa-2x");
     }
+}
+
+function wasSplitSuccessfull(fileType) {
+    return typeof fileType !== "undefined";
 }
 
 function elementWithFontAwsomeIcon(fontAwsomeClasses) 
@@ -216,19 +221,19 @@ function elementWithFontAwsomeIcon(fontAwsomeClasses)
     return fontAwsomeIcon;
 }
 
-function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
+function createAnchorTag(fileName, directoryLevel) {
     let anchorTag = document.createElement("a");
-    anchorTag.setAttribute("href", textAndHrefOfAnchor);
+    anchorTag.setAttribute("href", fileName);
     anchorTag.setAttribute("data-level", directoryLevel);
     anchorTag.className = "fileListingItemLink";
-    anchorTag.innerHTML = textAndHrefOfAnchor;
+    anchorTag.innerHTML = fileName;
     anchorTag.addEventListener("click", event =>
     { 
         // If treeView, has li an ul as first child, a click on that li should close the level underneath it
         // If iconView, a click on a link should only go deeper
         if(treeView)
         {
-            (hasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
+            (nodeInTreeViewHasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
         }
         else
         {
@@ -239,22 +244,17 @@ function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     return anchorTag;
 }
 
-function getListItemsCurrentlyAvailible(level)
-{
-    return document.querySelectorAll("#fileListing > ul li")[level];
-}
-
 function createSubLevel(treeBranches)
 {
     let newUl = document.createElement("ul");
     for(let i = 0; i < treeBranches.paths.length; i++)
     {
-        let linkLabels = treeBranches.paths[i].split("/")[0];
+        let linkLabel = treeBranches.paths[i].split("/")[0];
         
-        let newLi = createListItemWithLink(linkLabels, treeBranches.lastIndexFoundNewPath);
+        let newLi = createListItemWithLink(linkLabel, treeBranches.lastIndexFoundNewPath);
         let currentLiList = newUl.children;
     
-        if(!isLinkLabelInCurrentLiList(currentLiList, linkLabels))
+        if(!isLinkLabelInCurrentLiList(currentLiList, linkLabel))
             newUl.appendChild(newLi);
 
         if(!treeView)
@@ -291,16 +291,22 @@ function createLocationAnchorTag(textAndHrefOfAnchor, directoryLevel) {
         if(directoryLevel > 0)
         {
             goUppInDirectoryLevel(event);
+            removeLastLocationItem();
         }
         else
         {
             event.preventDefault();
             writeFilesToGUI(filePathArray);
+            removeAllLocationItemsExceptRoot();
         }
-        removeAllLocationItemsExceptRoot();
     });
 
     return anchorTag;
+}
+
+function removeLastLocationItem() 
+{
+    document.querySelector("header #currentLocation .locationItem:last-of-type").remove();
 }
 
 function removeAllLocationItemsExceptRoot() 
