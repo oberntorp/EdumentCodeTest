@@ -49,6 +49,11 @@ header span#viewType
     padding: 0px;
 }
 
+#fileListing ul li ul
+{
+    padding: 0px 40px;
+}
+
 #fileListing .iconView
 {
     display: grid;

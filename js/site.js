@@ -7,6 +7,16 @@ let filePathArray =
 let fileListing = document.querySelector("#fileListing");
 let treeView = true;
 
+let goUppInDirectoryLevel = (event) =>
+{
+    event.preventDefault();
+    let clickedElement = event.target;
+    if(!hasNoSubLevel(clickedElement.parentElement))
+    {
+        clickedElement.parentElement.childNodes[1].remove();
+    }
+}
+
 let changeViewType = (event, filePaths) =>
 {
     treeView = event.target.value == "treeView";
@@ -87,16 +97,17 @@ function  writeSubDirectoriesToGUI(event, filesArray)
     let pathsInDirectory = getNextPath(filesArray, oldPath);
     if(!pathsInDirectory.lastPathLevelReached)
     {
-        let subTree = createSubTree(pathsInDirectory);
+        let subLevel = createSubLevel(pathsInDirectory);
 
         // If list view, else replace file listing ul with subTree
         if(treeView)
         {
-            clickedElement.parentElement.appendChild(subTree);
+
+            clickedElement.parentElement.appendChild(subLevel);
         }
         else
         {
-            fileListing.replaceChild(subTree, fileListing.firstChild)
+            fileListing.replaceChild(subLevel, fileListing.firstChild)
             addCurrentLocation(clickedElement.innerHTML);
         }
     }
@@ -104,6 +115,10 @@ function  writeSubDirectoriesToGUI(event, filesArray)
     {
         alert("You are on the deepest level in this directory listing.");
     }
+}
+
+function hasNoSubLevel(clickedElement) {
+    return typeof clickedElement.childNodes[1] === "undefined";
 }
 
 function getNextPath(filesArray, oldPath)
@@ -190,7 +205,10 @@ function createAnchorTag(textAndHrefOfAnchor, directoryLevel) {
     anchorTag.setAttribute("data-level", directoryLevel);
     anchorTag.className = "fileListingItemLink";
     anchorTag.innerHTML = textAndHrefOfAnchor;
-    anchorTag.addEventListener("click", (event) => writeSubDirectoriesToGUI(event, filePathArray));
+    anchorTag.addEventListener("click", event =>
+    { 
+        (hasNoSubLevel(event.target.parentElement)) ?  writeSubDirectoriesToGUI(event, filePathArray) : goUppInDirectoryLevel(event);
+    });
 
     return anchorTag;
 }
@@ -200,7 +218,7 @@ function getListItemsCurrentlyAvailible(level)
     return document.querySelectorAll("#fileListing > ul li")[level];
 }
 
-function createSubTree(treeBranches)
+function createSubLevel(treeBranches)
 {
     let newUl = document.createElement("ul");
     for(let i = 0; i < treeBranches.paths.length; i++)
