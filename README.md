@@ -8,15 +8,19 @@ A webbapplication for browsing an made up directory
   * Tree view
   * Icon view
 * The visualization "Icon View" is accompanied by icons for:
-  * folders
-  * jpg
-  * png
-  * mp4
+  * Folders
+  * Pictures:
+    * jpg
+    * png
+  * Movies:
+    * mp4
 * Folders can be navigated up:
   * One level for icon view
   * Multiple levels for "Tree view"
 * It is clear where you are in the file structure:
-  * An area in the top saying "Your current location"
+  * Icon view:
+    * An area in the top saying "Your current location".
+  * Tree view: evident by indentation.
 * In "TreeView", please note that the current location means going up
 
 The site is to be found: <http://www.berntorp.com/edumentcodetest>
