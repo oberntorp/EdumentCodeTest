@@ -8,7 +8,7 @@ A webbapplication for browsing an made up directory
   * Tree view
   * Icon view
 * The visualization "Icon View" is accompanied by icons for:
-  * Folders
+  * folders
   * jpg
   * png
   * mp4
@@ -16,7 +16,8 @@ A webbapplication for browsing an made up directory
   * One level for icon view
   * Multiple levels for "Tree view"
 * It is clear where you are in the file structure:
-  * In "TreeView", please note that the current location means going up
+  * An area in the top saying "Your current location"
+* In "TreeView", please note that the current location means going up
 
 The site is to be found: <http://www.berntorp.com/edumentcodetest>
 
